@@ -21,7 +21,7 @@ jobs:
     - name: Execute Test
       run: |
         docker-compose exec web bash -c "apt-get update && apt-get install -y curl"
-        docker-compose exec web bash -c "curl localhost:8080"
+        docker-compose exec web bash -c "curl -f http://localhost:${{ env.PORT }}/ || exit 1"
     - name: Cleanup
       if: always()
       run: docker-compose down
@@ -46,7 +46,7 @@ jobs:
     - name: Execute Test
       run: |
         docker-compose exec web bash -c "apt-get update && apt-get install -y curl"
-        docker-compose exec web bash -c "curl localhost:8080"
+        docker-compose exec web bash -c "curl -f http://localhost:${{ env.PORT }}/ || exit 1"
     - name: Cleanup
       if: always()
       run: docker-compose down
