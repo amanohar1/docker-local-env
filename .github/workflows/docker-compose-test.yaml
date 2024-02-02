@@ -1,0 +1,52 @@
+name: Docker Compose Test
+on: [push]
+jobs:
+  build_dev:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+    - name: Build and Run with Docker Compose (Development)
+      run: |
+        docker-compose --env-file .env up -d --build
+        docker-compose ps
+    - name: Execute Test
+      run: |
+        docker-compose exec web bash -c "apt-get update && apt-get install -y curl"
+        docker-compose exec web bash -c "curl localhost:8080"
+    - name: Cleanup
+      if: always()
+      run: docker-compose down
+
+  build_prod:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+    - name: Build and Run with Docker Compose (Production)
+      run: |
+        docker-compose --env-file .env.prod -f docker-compose.prod.yml up -d --build
+        docker-compose ps
+    - name: Execute Test
+      run: |
+        docker-compose exec web bash -c "apt-get update && apt-get install -y curl"
+        docker-compose exec web bash -c "curl localhost:8080"
+    - name: Cleanup
+      if: always()
+      run: docker-compose down
